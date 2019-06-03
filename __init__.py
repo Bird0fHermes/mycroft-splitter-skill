@@ -16,6 +16,7 @@ class SplitterSkill(MycroftSkill):
 
         # Initialize working variables used within the skill.
 
+    # ISOLATES AND STRIPS PREFIXES AND SUFFIXES
     @intent_handler(IntentBuilder("").require("Split").require("Word"))
     def handle_split_word_intent(self, message):
         suffixRegex  = re.compile(r'(s$)|(ed$)|(ation$)')
@@ -24,28 +25,12 @@ class SplitterSkill(MycroftSkill):
         prefix = ""
         rootword = ""
 
-        def splitSuffix(toSplit_):
-            suffixMatch = suffixRegex.search(toSplit_)
-            if suffixMatch:
-                suffix = suffixMatch.group(0)
-                rootword = toSplit_[:suffixMatch.start(0)]
-            else:
-                suffix = "None"
-                rootword = toSplit_
-
-        def splitPrefix(toSplit_):
-            prefixMatch = prefixRegex.search(toSplit_)
-            if prefixMatch:
-                prefix = prefixMatch.group(0)
-            else:
-                prefix = "None"
-
         toSplit = message.data.get("Word")
         suffixMatch = suffixRegex.search(toSplit)
         if suffixMatch:
             suffix = suffixMatch.group(0)
             # First strip out suffixes
-            rootword = toSplit_[:suffixMatch.start(0)]
+            rootword = toSplit[:suffixMatch.start(0)]
         else:
             suffix = "None"
             rootword = toSplit
@@ -59,14 +44,18 @@ class SplitterSkill(MycroftSkill):
             prefix = "None"
 
         self.speak_dialog("rootword", data={"word": toSplit, "rootword": rootword})
-        self.speak_dialog("suffix", data={"suffix": suffix})
-        self.speak_dialog("prefix", data={"prefix": prefix})
+        if suffix != "None":
+            self.speak_dialog("suffix", data={"suffix": suffix})
+        if prefix != "None":
+            self.speak_dialog("prefix", data={"prefix": prefix})
 
+    # PLURALIZES A WORD
     @intent_handler(IntentBuilder("").require("Pluralize").require("Word"))
     def handle_pluralize_word_intent(self, message):
+        esRegex = re.compile(r'[zs]$')
 
         def pluralize_word(toPluralize_):
-            if (re.search('[Zz]$', toPluralize_)):
+            if esRegex.search(toPluralize_):
                 pluralizedWord_ = toPluralize_ + "es"
                 return pluralizedWord_
             else:
@@ -77,6 +66,11 @@ class SplitterSkill(MycroftSkill):
         pluralizedWord = pluralize_word(toPluralize)
         self.speak_dialog("pluralize", data={"toPluralize": toPluralize, "pluralizedWord": pluralizedWord})
 
+
+    # PUTS A WORD INTO PAST TENSE
+    @intent_handler(IntentBuilder("").require("Word").require("Past"))
+    def handle_pasttense_word_intent(self, message):
+        toPast = message.data.get("Word")
 
     # def stop(self):
     #    return False
