@@ -19,8 +19,8 @@ class SplitterSkill(MycroftSkill):
     # ISOLATES AND STRIPS PREFIXES AND SUFFIXES
     @intent_handler(IntentBuilder("").require("Split").require("Word"))
     def handle_split_word_intent(self, message):
-        suffixRegex  = re.compile(r'(s$)|(ed$)|(ation$)')
-        prefixRegex = re.compile(r'(^pre)')
+        suffixRegex  = re.compile(r'(s$)|(ion$)|(acy$)|(al$)|(dom$)|(er$)|(ify$)|(ism$)|(ist$)|(ity$)|(ness$)|(ship$)|(ment$)|(ly$)')
+        prefixRegex = re.compile(r'(^pre)|(^post)|(^anti)|(^auto)|(^co)|(^contra)|(^de)|(^dis)|(^hyper)|(^micro)|(^macro)')
         suffix = ""
         prefix = ""
         rootword = ""
@@ -62,7 +62,7 @@ class SplitterSkill(MycroftSkill):
                 pluralizedWord_ = toPluralize_ + "s"
                 return pluralizedWord_
 
-        toPluralize = message.data["Word"]
+        toPluralize = message.data.get("Word")
         pluralizedWord = pluralize_word(toPluralize)
         self.speak_dialog("pluralize", data={"toPluralize": toPluralize, "pluralizedWord": pluralizedWord})
 
@@ -70,7 +70,19 @@ class SplitterSkill(MycroftSkill):
     # PUTS A WORD INTO PAST TENSE
     @intent_handler(IntentBuilder("").require("Word").require("Past"))
     def handle_pasttense_word_intent(self, message):
-        toPast = message.data.get("Word")
+        eRegex = re.compile(r'[e]$')
+
+        def pasttense_word(toPastTense_):
+            if eRegex.search(toPastTense_):
+                pastTensedWord_ = toPastTense_ + "d"
+                return pastTensedWord_
+            else:
+                pastTensedWord_ = toPastTense_ + "ed"
+                return pastTensedWord_
+
+        toPastTense = message.data.get("Word")
+        pastTensedWord = pasttense_word(toPastTense)
+        self.speak_dialog("pasttense", data={"toPastTense":toPastTense, "pastTensedWord": pastTensedWord})
 
     # def stop(self):
     #    return False
